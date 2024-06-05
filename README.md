@@ -9,4 +9,5 @@ Spring 2024 Senior Project (ECEN 499) for the BYUI Physics Department ground-to-
   Justin Ackerman (Team Leader), Samuel Adams, Tyler Brady, Andy Clarkson, Brighton Rosskelley
 </summary>
 
-## References:
+## Sponsor:
+Todd Lines
