@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Mon Jun 10 14:49:08 2024
+# Process ID: 8632
+# Current directory: C:/Users/toby3adams/Test_Functionality/Test_Functionality.runs/synth_1
+# Command line: vivado.exe -log Test_1.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source Test_1.tcl
+# Log file: C:/Users/toby3adams/Test_Functionality/Test_Functionality.runs/synth_1/Test_1.vds
+# Journal file: C:/Users/toby3adams/Test_Functionality/Test_Functionality.runs/synth_1\vivado.jou
+#-----------------------------------------------------------
+source Test_1.tcl -notrace
