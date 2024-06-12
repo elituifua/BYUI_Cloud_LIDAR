@@ -1,0 +1,6 @@
+# Altium Projects
+
+> There are 2 altium projects that consist of this section:
+> 1. Shield Schematic and Layout
+> 2. Comparator Schematic and Layout
+
