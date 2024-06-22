@@ -67,6 +67,8 @@ void Error_Handler(void);
 #define Din_GPIO_Port GPIOA
 #define SDA_dp_Pin GPIO_PIN_10
 #define SDA_dp_GPIO_Port GPIOB
+#define Interrupt_Pin GPIO_PIN_14
+#define Interrupt_GPIO_Port GPIOB
 #define Start_Pin GPIO_PIN_7
 #define Start_GPIO_Port GPIOC
 #define Trig_LOOK_AT_Pin GPIO_PIN_9
@@ -77,8 +79,6 @@ void Error_Handler(void);
 #define SCL_dp_GPIO_Port GPIOB
 #define Dout_Pin GPIO_PIN_6
 #define Dout_GPIO_Port GPIOB
-#define Interrupt_Pin GPIO_PIN_9
-#define Interrupt_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
