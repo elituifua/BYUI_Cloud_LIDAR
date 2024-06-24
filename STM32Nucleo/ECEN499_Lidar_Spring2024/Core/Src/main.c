@@ -385,6 +385,22 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(Trig_LOOK_AT_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
+
+  /* Interrupt code for the shield
+   * Overall, I am thinking that either 1-2 interrupts will be needed to start/stop.
+   * The time duration to wait should probably also be around like, 0.2 ms or 200 us
+   * because this should be able to bounce to and from ~98360 ft, and that should be
+   * plenty of time and space to get a signal back on distance.
+   * */
+
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 1, 1);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 1, 1);
+  HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+  // was this the right spot to put it in?
+  // Well, it did build so that's good?
+
 /* USER CODE END MX_GPIO_Init_2 */
 }
 

@@ -4,8 +4,9 @@
 ../Core/Src/main.c:130:10:TDC7200_Read_Register	24	static
 ../Core/Src/main.c:145:6:TDC7200_Write_Register	24	static
 ../Core/Src/main.c:157:6:Set_Pot_Value	32	static
-../Core/Src/main.c:182:5:main	8	static
-../Core/Src/main.c:227:6:SystemClock_Config	96	static
-../Core/Src/main.c:277:13:MX_I2C1_Init	8	static
-../Core/Src/main.c:325:13:MX_GPIO_Init	40	static
-../Core/Src/main.c:393:6:Error_Handler	4	static,ignoring_inline_asm
+../Core/Src/main.c:177:6:Intialize_TDC	4	static
+../Core/Src/main.c:188:5:main	8	static
+../Core/Src/main.c:233:6:SystemClock_Config	96	static
+../Core/Src/main.c:283:13:MX_I2C1_Init	8	static
+../Core/Src/main.c:331:13:MX_GPIO_Init	40	static
+../Core/Src/main.c:414:6:Error_Handler	4	static,ignoring_inline_asm

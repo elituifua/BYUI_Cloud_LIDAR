@@ -4,8 +4,9 @@
 ../Core/Src/main.c:130:10:TDC7200_Read_Register	1
 ../Core/Src/main.c:145:6:TDC7200_Write_Register	1
 ../Core/Src/main.c:157:6:Set_Pot_Value	1
-../Core/Src/main.c:182:5:main	1
-../Core/Src/main.c:227:6:SystemClock_Config	4
-../Core/Src/main.c:277:13:MX_I2C1_Init	4
-../Core/Src/main.c:325:13:MX_GPIO_Init	1
-../Core/Src/main.c:393:6:Error_Handler	1
+../Core/Src/main.c:177:6:Intialize_TDC	1
+../Core/Src/main.c:188:5:main	1
+../Core/Src/main.c:233:6:SystemClock_Config	4
+../Core/Src/main.c:283:13:MX_I2C1_Init	4
+../Core/Src/main.c:331:13:MX_GPIO_Init	1
+../Core/Src/main.c:414:6:Error_Handler	1
