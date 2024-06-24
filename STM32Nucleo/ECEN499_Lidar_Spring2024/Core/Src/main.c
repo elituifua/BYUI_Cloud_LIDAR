@@ -154,13 +154,29 @@ void TDC7200_Write_Register(uint8_t reg, uint8_t value)
     HAL_GPIO_WritePin(GPIOA, CS_N_Pin, GPIO_PIN_SET); // CS high
 }
 
-void start_up(void)
+void Set_Pot_Value(uint8_t pot_value)
 {
-	//initialize TDC
+	/* This function will take in a 8 bit value that will determine the value of the potentiometer.
+	 * The DigiPot needs three things to update 1. Slave Address, 2. Register Address, and 3. Pot Value
+	 * The Slave address (8bit) is comprised of the address (7bits) and a read/write bit (1bit lsb)
+	 * The register address for the pot is 0b 0000 0000
+	 * Potentiometer Values can range from 0x00 to 0xFF
+	 */
 
-	//initialize DigiPot
-	int Reg_Address = 0b00000000; // The only register address is at 0b 0000 0000
-	int Pot_Value =0x0F; //SEE Resistance Value table in Data sheet.
+	uint8_t tx_data[2];  // Buffer to hold the data to be transmitted
+	uint16_t SLAVE_ADDRESS = 0x11; //This will need to be changed.
+
+	// Populate the data buffer
+	tx_data[0] = 0b00000000;  // Register address to write to
+	tx_data[1] = pot_value;   // 8-bit word to write //SEE Resistance Value table in Data sheet.
+
+	// Perform I2C transmission
+	HAL_I2C_Master_Transmit(&hi2c1, (uint16_t)SLAVE_ADDRESS, tx_data, 2, HAL_MAX_DELAY);
+}
+
+void Intialize_TDC(void)
+{
+
 }
 
 /* USER CODE END 0 */
