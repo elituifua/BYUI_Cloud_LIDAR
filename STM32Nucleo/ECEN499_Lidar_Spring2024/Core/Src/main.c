@@ -63,6 +63,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
 
 /* USER CODE BEGIN PV */
 
@@ -71,6 +72,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -152,7 +154,30 @@ void TDC7200_Write_Register(uint8_t reg, uint8_t value)
     HAL_GPIO_WritePin(GPIOA, CS_N_Pin, GPIO_PIN_SET); // CS high
 }
 
+void Set_Pot_Value(uint8_t pot_value)
+{
+	/* This function will take in a 8 bit value that will determine the value of the potentiometer.
+	 * The DigiPot needs three things to update 1. Slave Address, 2. Register Address, and 3. Pot Value
+	 * The Slave address (8bit) is comprised of the address (7bits) and a read/write bit (1bit lsb)
+	 * The register address for the pot is 0b 0000 0000
+	 * Potentiometer Values can range from 0x00 to 0xFF
+	 */
 
+	uint8_t tx_data[2];  // Buffer to hold the data to be transmitted
+	uint16_t SLAVE_ADDRESS = 0x11; //This will need to be changed.
+
+	// Populate the data buffer
+	tx_data[0] = 0b00000000;  // Register address to write to
+	tx_data[1] = pot_value;   // 8-bit word to write //SEE Resistance Value table in Data sheet.
+
+	// Perform I2C transmission
+	HAL_I2C_Master_Transmit(&hi2c1, (uint16_t)SLAVE_ADDRESS, tx_data, 2, HAL_MAX_DELAY);
+}
+
+void Intialize_TDC(void)
+{
+
+}
 
 /* USER CODE END 0 */
 
@@ -185,6 +210,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -250,6 +276,54 @@ void SystemClock_Config(void)
 }
 
 /**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x10909CEC;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -291,6 +365,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : Interrupt_Pin Dout_Pin */
+  GPIO_InitStruct.Pin = Interrupt_Pin|Dout_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
   /*Configure GPIO pin : Start_Pin */
   GPIO_InitStruct.Pin = Start_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -303,12 +383,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(Trig_LOOK_AT_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : Dout_Pin Interrupt_Pin */
-  GPIO_InitStruct.Pin = Dout_Pin|Interrupt_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
