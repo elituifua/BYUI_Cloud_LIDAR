@@ -55,6 +55,7 @@
 #define TDC_CALIBRATION1                  0x1B
 #define TDC_CALIBRATION2                  0x1C
 
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -144,7 +145,7 @@ uint32_t TDC7200_Read_Register(uint8_t reg)
 
 void TDC7200_Write_Register(uint8_t reg, uint8_t value)
 {
-    uint8_t txData = (reg & 0x1F) + 0x40; // Ensure bit 6 is set for write
+    uint8_t txData = (reg & 0x3F) | 0x40; // Ensure bit 6 is set for write
 
     HAL_GPIO_WritePin(GPIOA, CS_N_Pin, GPIO_PIN_RESET); // CS low
 
@@ -181,17 +182,32 @@ void Intialize_TDC(void)
 
 uint32_t take_measurement(){
 	// Set START_MEAS bit to 1
-	// Wait for trig
-	//when trig goes high, set start_pin high and laser control pin high
-	// wait for stop
-	// read result
+	uint32_t config_value = TDC_7200_Read_Register(TDC_CONFIG1);
+	config_value |= 0x01;
+	TDC7200_Write_Register(TDC_CONFIG1, config_value);
 
+	// Wait for trig
+    while (HAL_GPIO_ReadPin(GPIOA, Trigg_Pin) == GPIO_PIN_RESET)
+    {
+        // Optional: Add a small delay to reduce CPU usage
+        wait_cycles(1);
+    }
+
+    //when trig goes high, set start_pin high and laser control pin high
+    HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_SET); // Start High
+    HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_SET); // Laser High
+
+    // wait for interrupt
+    			//___________ Gonna need to make interrupts work and figure out how to use them here in this situation
+
+	// read result
+    return TDC7200_Read_Register(TDC_TIME1);
 
 }
 
 uint32_t calculate_offset(uint32_t measured_time){
 	// Calculate offset for time for laser to turn on and any other delays in the circuit
-
+	return measured_time;
 }
 
 
