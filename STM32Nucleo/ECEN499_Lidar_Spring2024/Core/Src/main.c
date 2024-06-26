@@ -182,12 +182,12 @@ void Intialize_TDC(void)
 
 uint32_t take_measurement(){
 	// Set START_MEAS bit to 1
-	uint32_t config_value = TDC_7200_Read_Register(TDC_CONFIG1);
+	uint32_t config_value = TDC7200_Read_Register(TDC_CONFIG1);
 	config_value |= 0x01;
 	TDC7200_Write_Register(TDC_CONFIG1, config_value);
 
 	// Wait for trig
-    while (HAL_GPIO_ReadPin(GPIOA, Trigg_Pin) == GPIO_PIN_RESET)
+//while (HAL_GPIO_ReadPin(GPIOA, Trigg_Pin) == GPIO_PIN_RESET)
     {
         // Optional: Add a small delay to reduce CPU usage
         wait_cycles(1);
@@ -195,7 +195,7 @@ uint32_t take_measurement(){
 
     //when trig goes high, set start_pin high and laser control pin high
     HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_SET); // Start High
-    HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_SET); // Laser High
+// HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_SET); // Laser High
 
     // wait for interrupt
     			//___________ Gonna need to make interrupts work and figure out how to use them here in this situation
