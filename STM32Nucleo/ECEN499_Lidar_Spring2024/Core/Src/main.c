@@ -84,7 +84,7 @@ static void MX_I2C1_Init(void);
 void wait_cycles(uint32_t cycles){
 	while (cycles-- > 0){
 		__asm__ volatile ("nop");
-	}
+	} 				// @ 8MHz, each clock cycle is 125 ns
 }
 
 
@@ -98,9 +98,9 @@ void SPI_Write(uint8_t data)
 
         // Toggle SCK
         HAL_GPIO_WritePin(GPIOA, SCLK_Pin, GPIO_PIN_SET);
-        wait_cycles(10); // Small delay to simulate clock
+        wait_cycles(4); // Small delay to simulate clock
         HAL_GPIO_WritePin(GPIOA, SCLK_Pin, GPIO_PIN_RESET);
-        wait_cycles(10);
+        wait_cycles(4);
     }
 }
 
@@ -113,7 +113,7 @@ uint32_t SPI_Read(void)
 
         // Toggle SCK
         HAL_GPIO_WritePin(GPIOA, SCLK_Pin, GPIO_PIN_SET);
-        wait_cycles(10);
+        wait_cycles(4);
 
         // Read MISO
         if (HAL_GPIO_ReadPin(GPIOB, Dout_Pin) == GPIO_PIN_SET)
@@ -122,7 +122,7 @@ uint32_t SPI_Read(void)
         }
 
         HAL_GPIO_WritePin(GPIOA, SCLK_Pin, GPIO_PIN_RESET);
-        wait_cycles(10);
+        wait_cycles(4);
     }
     return data;
 }
@@ -178,6 +178,22 @@ void Intialize_TDC(void)
 {
 
 }
+
+uint32_t take_measurement(){
+	// Set START_MEAS bit to 1
+	// Wait for trig
+	//when trig goes high, set start_pin high and laser control pin high
+	// wait for stop
+	// read result
+
+
+}
+
+uint32_t calculate_offset(uint32_t measured_time){
+	// Calculate offset for time for laser to turn on and any other delays in the circuit
+
+}
+
 
 /* USER CODE END 0 */
 
