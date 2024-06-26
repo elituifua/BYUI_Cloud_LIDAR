@@ -282,11 +282,11 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 1;
-  RCC_OscInitStruct.PLL.PLLN = 10;
+  RCC_OscInitStruct.PLL.PLLM = 2;
+  RCC_OscInitStruct.PLL.PLLN = 8;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
-  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV8;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -301,7 +301,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -323,7 +323,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x10909CEC;
+  hi2c1.Init.Timing = 0x2000090E;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -372,8 +372,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, CLK_TriState_Pin|CS_N_Pin|SCLK_Pin|Din_Pin
-                          |Enable_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin|CLK_TriState_Pin|CS_N_Pin|SCLK_Pin
+                          |Din_Pin|Enable_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, SDA_dp_Pin|SCL_dp_Pin, GPIO_PIN_RESET);
@@ -381,10 +381,16 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(Start_GPIO_Port, Start_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : CLK_TriState_Pin CS_N_Pin SCLK_Pin Din_Pin
-                           Enable_Pin */
-  GPIO_InitStruct.Pin = CLK_TriState_Pin|CS_N_Pin|SCLK_Pin|Din_Pin
-                          |Enable_Pin;
+  /*Configure GPIO pin : Interrupt_temp_Pin */
+  GPIO_InitStruct.Pin = Interrupt_temp_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(Interrupt_temp_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : Laser_Control_Pin CLK_TriState_Pin CS_N_Pin SCLK_Pin
+                           Din_Pin Enable_Pin */
+  GPIO_InitStruct.Pin = Laser_Control_Pin|CLK_TriState_Pin|CS_N_Pin|SCLK_Pin
+                          |Din_Pin|Enable_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -410,33 +416,17 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(Start_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : Trig_LOOK_AT_Pin */
-  GPIO_InitStruct.Pin = Trig_LOOK_AT_Pin;
+  /*Configure GPIO pin : Trigg_Pin */
+  GPIO_InitStruct.Pin = Trigg_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(Trig_LOOK_AT_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(Trigg_GPIO_Port, &GPIO_InitStruct);
 
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-
-  /*
-   * Interrupt code for the shield
-   * Overall, I am thinking that either 1-2 interrupts will be needed to start/stop.
-   * The time duration to wait should probably also be around like, 0.2 ms or 200 us
-   * because this should be able to bounce to and from ~98360 ft, and that should be
-   * plenty of time and space to get a signal back on distance.
-   * */
-
-  /*
-   * This is where the interrupts are initialized
-   */
-  HAL_NVIC_SetPriority(EXTI0_IRQn, 1, 1);
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI1_IRQn, 1, 1);
-  HAL_NVIC_EnableIRQ(EXTI1_IRQn);
-  // was this the right spot to put it in?
-  // Well, it did build so that's good?
-
+/* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
 }
 

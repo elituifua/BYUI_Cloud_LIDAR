@@ -57,6 +57,11 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define Interrupt_temp_Pin GPIO_PIN_0
+#define Interrupt_temp_GPIO_Port GPIOA
+#define Interrupt_temp_EXTI_IRQn EXTI0_IRQn
+#define Laser_Control_Pin GPIO_PIN_1
+#define Laser_Control_GPIO_Port GPIOA
 #define CLK_TriState_Pin GPIO_PIN_2
 #define CLK_TriState_GPIO_Port GPIOA
 #define CS_N_Pin GPIO_PIN_5
@@ -71,8 +76,8 @@ void Error_Handler(void);
 #define Interrupt_GPIO_Port GPIOB
 #define Start_Pin GPIO_PIN_7
 #define Start_GPIO_Port GPIOC
-#define Trig_LOOK_AT_Pin GPIO_PIN_9
-#define Trig_LOOK_AT_GPIO_Port GPIOA
+#define Trigg_Pin GPIO_PIN_9
+#define Trigg_GPIO_Port GPIOA
 #define Enable_Pin GPIO_PIN_10
 #define Enable_GPIO_Port GPIOA
 #define SCL_dp_Pin GPIO_PIN_5
