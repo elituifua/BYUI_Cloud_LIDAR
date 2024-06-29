@@ -187,18 +187,20 @@ uint32_t take_measurement(){
 	TDC7200_Write_Register(TDC_CONFIG1, config_value);
 
 	// Wait for trig
-//while (HAL_GPIO_ReadPin(GPIOA, Trigg_Pin) == GPIO_PIN_RESET)
-    {
-        // Optional: Add a small delay to reduce CPU usage
-        wait_cycles(1);
-    }
+	while (HAL_GPIO_ReadPin(GPIOA, Trigg_Pin) == GPIO_PIN_RESET)
+		{
+			wait_cycles(1);
+		}
 
     //when trig goes high, set start_pin high and laser control pin high
     HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_SET); // Start High
-// HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_SET); // Laser High
+    HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_SET); // Laser High
 
     // wait for interrupt
-    			//___________ Gonna need to make interrupts work and figure out how to use them here in this situation
+    while (HAL_GPIO_ReadPin(GPIOA, Interrupt_Temp_Pin) == GPIO_PIN_RESET)
+        {
+            wait_cycles(1);
+        }
 
 	// read result
     return TDC7200_Read_Register(TDC_TIME1);
@@ -372,7 +374,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, Interupt_temp_Pin|Laser_Control_Pin|CLK_TriState_Pin|CS_N_Pin
+  HAL_GPIO_WritePin(GPIOA, Interrupt_Temp_Pin|Laser_Control_Pin|CLK_TriState_Pin|CS_N_Pin
                           |SCLK_Pin|Din_Pin|Enable_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -381,9 +383,9 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(Start_GPIO_Port, Start_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : Interupt_temp_Pin Laser_Control_Pin CLK_TriState_Pin CS_N_Pin
+  /*Configure GPIO pins : Interrupt_Temp_Pin Laser_Control_Pin CLK_TriState_Pin CS_N_Pin
                            SCLK_Pin Din_Pin Enable_Pin */
-  GPIO_InitStruct.Pin = Interupt_temp_Pin|Laser_Control_Pin|CLK_TriState_Pin|CS_N_Pin
+  GPIO_InitStruct.Pin = Interrupt_Temp_Pin|Laser_Control_Pin|CLK_TriState_Pin|CS_N_Pin
                           |SCLK_Pin|Din_Pin|Enable_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
