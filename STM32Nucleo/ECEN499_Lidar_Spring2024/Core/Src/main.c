@@ -372,8 +372,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin|CLK_TriState_Pin|CS_N_Pin|SCLK_Pin
-                          |Din_Pin|Enable_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, Interupt_temp_Pin|Laser_Control_Pin|CLK_TriState_Pin|CS_N_Pin
+                          |SCLK_Pin|Din_Pin|Enable_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, SDA_dp_Pin|SCL_dp_Pin, GPIO_PIN_RESET);
@@ -381,16 +381,10 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(Start_GPIO_Port, Start_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : Interrupt_temp_Pin */
-  GPIO_InitStruct.Pin = Interrupt_temp_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(Interrupt_temp_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : Laser_Control_Pin CLK_TriState_Pin CS_N_Pin SCLK_Pin
-                           Din_Pin Enable_Pin */
-  GPIO_InitStruct.Pin = Laser_Control_Pin|CLK_TriState_Pin|CS_N_Pin|SCLK_Pin
-                          |Din_Pin|Enable_Pin;
+  /*Configure GPIO pins : Interupt_temp_Pin Laser_Control_Pin CLK_TriState_Pin CS_N_Pin
+                           SCLK_Pin Din_Pin Enable_Pin */
+  GPIO_InitStruct.Pin = Interupt_temp_Pin|Laser_Control_Pin|CLK_TriState_Pin|CS_N_Pin
+                          |SCLK_Pin|Din_Pin|Enable_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -403,11 +397,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Interrupt_Pin Dout_Pin */
-  GPIO_InitStruct.Pin = Interrupt_Pin|Dout_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  /*Configure GPIO pin : Interrupt_Pin */
+  GPIO_InitStruct.Pin = Interrupt_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF3_TIM8;
+  HAL_GPIO_Init(Interrupt_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : Start_Pin */
   GPIO_InitStruct.Pin = Start_Pin;
@@ -422,9 +418,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(Trigg_GPIO_Port, &GPIO_InitStruct);
 
-  /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+  /*Configure GPIO pin : Dout_Pin */
+  GPIO_InitStruct.Pin = Dout_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(Dout_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
