@@ -112,12 +112,14 @@ uint32_t take_measurement(){
     HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_SET); // Laser High
 
     // wait for interrupt
-    while (HAL_GPIO_ReadPin(GPIOA, Interrupt_Temp_Pin) == GPIO_PIN_RESET)
+    while (HAL_GPIO_ReadPin(GPIOA, Interrupt_Pin) == GPIO_PIN_RESET)
         {
             wait_cycles(1);
         }
 
 	// read result
+    HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_RESET); // Start High
+    HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_RESET); // Laser High
     return TDC7200_Read_Register(TDC_TIME1);
 
 }
