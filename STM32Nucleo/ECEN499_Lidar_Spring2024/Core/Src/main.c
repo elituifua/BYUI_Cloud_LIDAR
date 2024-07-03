@@ -83,16 +83,22 @@ void Set_Pot_Value(uint8_t pot_value)
 void Intialize_TDC(void)
 {
 	// Set Enable Pin
-
+	HAL_GPIO_WritePin(GPIOA, Enable_Pin, GPIO_PIN_SET);
 
 	// wait at least 1.5 ms (12,000 clock cycles) for LDO_SET2 (see datasheet 8.4.7)
-	wait_cycles(12000);
-
-	// Set NUM_STOP bits in config2 to 1 (8.4.3) (maybe unnecessary)
-
+	wait_cycles(24000);
 
 	// Set tdc to mode 2
-	//
+	// set force calibration to 1
+	uint8_t config1 = TDC7200_Read_Register(CONFIG1) | 0x82;
+	TDC7200_Write_Register(CONFIG1, config1);
+
+
+	// set calibration2_periods to b'11
+	uint32_t config2 = TDC7200_Read_Register(CONFIG2) | 0xC0;
+	TDC7200_Write_Register(CONFIG2, config2);
+
+
 }
 
 uint32_t take_measurement(){
@@ -118,9 +124,17 @@ uint32_t take_measurement(){
         }
 
 	// read result
-    HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_RESET); // Start High
-    HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_RESET); // Laser High
-    return TDC7200_Read_Register(TDC_TIME1);
+    HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_RESET); // Start low
+    HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_RESET); // Laser low
+
+
+    int time1 = TDC7200_Read_Register(TDC_TIME1);
+    int cal1 = TDC7200_Read_Register(TDC_CALIBRATION1);
+    int cal2 = TDC7200_Read_Register(TDC_CALIBRATION2);
+    int cal2_periods = 40;
+//Add math__________________________________________________________________________________ _ _ _ _ _ _ _ _ _ _ _
+
+    return 0;
 
 }
 
