@@ -185,7 +185,7 @@ int main(void)
   MX_UART5_Init();
   /* USER CODE BEGIN 2 */
 
-  Initialize_TDC();
+  Intialize_TDC();
 
   wait_cycles(2000000);
 
