@@ -178,12 +178,21 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
+  Initialize_TDC();
+
+  wait_cycles(2000000);
+
+  Set_Pot_Value(128);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  double tof = take_measurement();
+	  double distance = tof*299792458*0.5;
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
