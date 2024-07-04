@@ -95,18 +95,18 @@ void Intialize_TDC(void)
 
 	// Set tdc to mode 2
 	// set force calibration to 1
-	uint8_t config1 = TDC7200_Read_Register(CONFIG1) | 0x82;
-	TDC7200_Write_Register(CONFIG1, config1);
+	uint32_t config1 = TDC7200_Read_Register(TDC_CONFIG1) | 0x82;
+	TDC7200_Write_Register(TDC_CONFIG1, config1);
 
 
 	// set calibration2_periods to b'11
-	uint32_t config2 = TDC7200_Read_Register(CONFIG2) | 0xC0;
-	TDC7200_Write_Register(CONFIG2, config2);
+	uint32_t config2 = TDC7200_Read_Register(TDC_CONFIG2) | 0xC0;
+	TDC7200_Write_Register(TDC_CONFIG2, config2);
 
 
 }
 
-uint32_t take_measurement(){
+double take_measurement(){
 	// Set START_MEAS bit to 1
 	uint32_t config_value = TDC7200_Read_Register(TDC_CONFIG1);
 	config_value |= 0x01;
@@ -133,13 +133,20 @@ uint32_t take_measurement(){
     HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_RESET); // Laser low
 
 
+    // Calculate Time of Flight
     int time1 = TDC7200_Read_Register(TDC_TIME1);
+    int time2 = TDC7200_Read_Register(TDC_TIME2);
     int cal1 = TDC7200_Read_Register(TDC_CALIBRATION1);
     int cal2 = TDC7200_Read_Register(TDC_CALIBRATION2);
+    int clock_count1 = TDC7200_Read_Register(TDC_CLOCK_COUNT1);
     int cal2_periods = 40;
-//Add math__________________________________________________________________________________ _ _ _ _ _ _ _ _ _ _ _
+    double clk_period = 1/(8*10^6);
 
-    return 0;
+    double cal_count = (cal2-cal1)/(cal2_periods - 1);
+
+    double norm_lsb = clk_period / cal_count;
+    double tof = ((time1 - time2) * norm_lsb) + (clock_count1 * clk_period);
+    return tof;
 
 }
 
