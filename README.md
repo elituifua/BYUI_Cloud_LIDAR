@@ -14,7 +14,7 @@ The Brigham Young University Physics department wanted a system that could test 
 The spring 2024 iteration is one that only consists of a red laser and it's respective photodiode comparator circuit. This is to ensure the main focus is for an overall system to work. Using this as a benchmark allows us, or potential future Senior project groups, to have a standard to work from.
 
 ## Team:
-  Justin Ackerman (Team Leader), Samuel Adams, Tyler Brady, Andy Clarkson, Brighton Rosskelley
+  Justin Ackerman (Team Leader), Samuel Adams, Tyler Brady, Andy Clarkson, Brighton Roskelley
 
 
 ## Sponsor:
