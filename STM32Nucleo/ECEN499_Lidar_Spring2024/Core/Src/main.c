@@ -44,6 +44,9 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
+UART_HandleTypeDef huart4;
+UART_HandleTypeDef huart5;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -52,6 +55,8 @@ I2C_HandleTypeDef hi2c1;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_UART4_Init(void);
+static void MX_UART5_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -83,19 +88,25 @@ void Set_Pot_Value(uint8_t pot_value)
 void Intialize_TDC(void)
 {
 	// Set Enable Pin
-
+	HAL_GPIO_WritePin(GPIOA, Enable_Pin, GPIO_PIN_SET);
 
 	// wait at least 1.5 ms (12,000 clock cycles) for LDO_SET2 (see datasheet 8.4.7)
-	wait_cycles(12000);
-
-	// Set NUM_STOP bits in config2 to 1 (8.4.3) (maybe unnecessary)
-
+	wait_cycles(24000);
 
 	// Set tdc to mode 2
-	//
+	// set force calibration to 1
+	uint32_t config1 = TDC7200_Read_Register(TDC_CONFIG1) | 0x82;
+	TDC7200_Write_Register(TDC_CONFIG1, config1);
+
+
+	// set calibration2_periods to b'11
+	uint32_t config2 = TDC7200_Read_Register(TDC_CONFIG2) | 0xC0;
+	TDC7200_Write_Register(TDC_CONFIG2, config2);
+
+
 }
 
-uint32_t take_measurement(){
+double take_measurement(){
 	// Set START_MEAS bit to 1
 	uint32_t config_value = TDC7200_Read_Register(TDC_CONFIG1);
 	config_value |= 0x01;
@@ -118,9 +129,24 @@ uint32_t take_measurement(){
         }
 
 	// read result
-    HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_RESET); // Start High
-    HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_RESET); // Laser High
-    return TDC7200_Read_Register(TDC_TIME1);
+    HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_RESET); // Start low
+    HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_RESET); // Laser low
+
+
+    // Calculate Time of Flight
+    int time1 = TDC7200_Read_Register(TDC_TIME1);
+    int time2 = TDC7200_Read_Register(TDC_TIME2);
+    int cal1 = TDC7200_Read_Register(TDC_CALIBRATION1);
+    int cal2 = TDC7200_Read_Register(TDC_CALIBRATION2);
+    int clock_count1 = TDC7200_Read_Register(TDC_CLOCK_COUNT1);
+    int cal2_periods = 40;
+    double clk_period = 1/(8*10^6);
+
+    double cal_count = (cal2-cal1)/(cal2_periods - 1);
+
+    double norm_lsb = clk_period / cal_count;
+    double tof = ((time1 - time2) * norm_lsb) + (clock_count1 * clk_period);
+    return tof;
 
 }
 
@@ -162,7 +188,15 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C1_Init();
+  MX_UART4_Init();
+  MX_UART5_Init();
   /* USER CODE BEGIN 2 */
+
+  Intialize_TDC();
+
+  wait_cycles(2000000);
+
+  Set_Pot_Value(128);
 
   /* USER CODE END 2 */
 
@@ -170,6 +204,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  double tof = take_measurement();
+	  double distance = tof*299792458*0.5;
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -275,6 +312,76 @@ static void MX_I2C1_Init(void)
 }
 
 /**
+  * @brief UART4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_UART4_Init(void)
+{
+
+  /* USER CODE BEGIN UART4_Init 0 */
+
+  /* USER CODE END UART4_Init 0 */
+
+  /* USER CODE BEGIN UART4_Init 1 */
+
+  /* USER CODE END UART4_Init 1 */
+  huart4.Instance = UART4;
+  huart4.Init.BaudRate = 115200;
+  huart4.Init.WordLength = UART_WORDLENGTH_8B;
+  huart4.Init.StopBits = UART_STOPBITS_1;
+  huart4.Init.Parity = UART_PARITY_NONE;
+  huart4.Init.Mode = UART_MODE_TX_RX;
+  huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart4.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart4.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart4.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN UART4_Init 2 */
+
+  /* USER CODE END UART4_Init 2 */
+
+}
+
+/**
+  * @brief UART5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_UART5_Init(void)
+{
+
+  /* USER CODE BEGIN UART5_Init 0 */
+
+  /* USER CODE END UART5_Init 0 */
+
+  /* USER CODE BEGIN UART5_Init 1 */
+
+  /* USER CODE END UART5_Init 1 */
+  huart5.Instance = UART5;
+  huart5.Init.BaudRate = 9600;
+  huart5.Init.WordLength = UART_WORDLENGTH_8B;
+  huart5.Init.StopBits = UART_STOPBITS_1;
+  huart5.Init.Parity = UART_PARITY_NONE;
+  huart5.Init.Mode = UART_MODE_TX_RX;
+  huart5.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart5.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart5.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart5.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN UART5_Init 2 */
+
+  /* USER CODE END UART5_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -289,6 +396,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin|CLK_TriState_Pin|CS_N_Pin|SCLK_Pin

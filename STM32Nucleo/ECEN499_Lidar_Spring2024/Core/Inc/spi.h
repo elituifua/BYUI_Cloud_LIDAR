@@ -139,7 +139,7 @@ uint32_t TDC7200_Read_Register(uint8_t reg)
     return rxData;
 }
 
-void TDC7200_Write_Register(uint8_t reg, uint8_t value)
+void TDC7200_Write_Register(uint8_t reg, uint32_t value)
 {
     uint8_t txData = (reg & 0x3F) | 0x40; // Ensure bit 6 is set for write
 
@@ -148,7 +148,7 @@ void TDC7200_Write_Register(uint8_t reg, uint8_t value)
     if (reg <= 0x09){
 
         SPI_Write_8(txData); // Send register address
-        SPI_Write_8(value); // Send value
+        SPI_Write_8((uint8_t) value); // Send value
 
     }
 
