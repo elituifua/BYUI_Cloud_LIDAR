@@ -61,8 +61,6 @@ void Error_Handler(void);
 #define Interrupt_GPIO_Port GPIOA
 #define Laser_Control_Pin GPIO_PIN_1
 #define Laser_Control_GPIO_Port GPIOA
-#define CLK_TriState_Pin GPIO_PIN_2
-#define CLK_TriState_GPIO_Port GPIOA
 #define CS_N_Pin GPIO_PIN_5
 #define CS_N_GPIO_Port GPIOA
 #define SCLK_Pin GPIO_PIN_6

@@ -22,6 +22,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "spi.h"
+#include "stdlib.h"
+#include "stdio.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -38,32 +41,33 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define UART_DELAY 100 // wait max of 100 ms between frames in message
+#define MAX_MESSAGE_SIZE 100 // 100 characters maximum message size
+#define MAX_NEW_POT_VALUE_SIZE 3 // 3 characters maximum potentiometer value size
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
-UART_HandleTypeDef huart4;
-UART_HandleTypeDef huart5;
+UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+int  new_pot_value;
+char message[MAX_MESSAGE_SIZE];
+char distance[MAX_MESSAGE_SIZE];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
-static void MX_UART4_Init(void);
-static void MX_UART5_Init(void);
+static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
 
 void Set_Pot_Value(uint8_t pot_value)
 {
@@ -188,8 +192,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C1_Init();
-  MX_UART4_Init();
-  MX_UART5_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
   Intialize_TDC();
@@ -204,12 +207,46 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  double tof = take_measurement();
-	  double distance = tof*299792458*0.5;
+	  // check for message on USART2
+	  if (USART2->ISR & UART_FLAG_RXNE){
+		  // zero out message array
+	  	  memset(message, 0, sizeof(message));
+	  	  // get message from USART2
+	  	  HAL_UART_Receive(&huart2, (unsigned char*) message, sizeof(message)-1, UART_DELAY);
+	  	  // send the same message to USART1
+//	  	  HAL_UART_Transmit(&huart1, (unsigned char*) message, strlen(message), UART_DELAY);
+	  	  // check for message on USART1
+//	  if (USART1->ISR & UART_FLAG_RXNE){
+//		  // zero out message array
+//	 	  memset(message, 0, sizeof(message));
+	  	  // get message from USART1
+//	  	  HAL_UART_Receive(&huart1, (unsigned char*) message, sizeof(message)-1, UART_DELAY);
+	  	  // send the same message to USART2
+	  	  HAL_UART_Transmit(&huart2, (unsigned char*) message, strlen(message), UART_DELAY);
+
+//	  	  if (strcmp(message,"Set_pot_val") == 0){
+//	  		  memset(message, 0, sizeof(message));
+//	  		  strncpy(message, "Please enter pot value (1-128): ", MAX_MESSAGE_SIZE);
+//	  		  if (1 <= atoi(message) <= 128){
+//	  			  new_pot_value = atoi(message);
+//	  		  }
+//	  		  else{
+//	  			  strncpy(message, "Please use the set_pot_val command again with valid pot value.", MAX_MESSAGE_SIZE);
+//	  		  }
+//	  	  }
+//	  	  else if (strcmp(message, "Start_measure") == 0){
+	  	  double tof = take_measurement();
+	  	  double distance_meas = tof*299792458*0.5;
+	  	  char distance_meas_str[MAX_MESSAGE_SIZE];
+	  	  itoa(distance_meas, distance_meas_str, 10);
+	  	  strncpy(distance, distance_meas_str, MAX_MESSAGE_SIZE);
+	  }
+
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
   }
   /* USER CODE END 3 */
 }
@@ -312,72 +349,37 @@ static void MX_I2C1_Init(void)
 }
 
 /**
-  * @brief UART4 Initialization Function
+  * @brief USART2 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_UART4_Init(void)
+static void MX_USART2_UART_Init(void)
 {
 
-  /* USER CODE BEGIN UART4_Init 0 */
+  /* USER CODE BEGIN USART2_Init 0 */
 
-  /* USER CODE END UART4_Init 0 */
+  /* USER CODE END USART2_Init 0 */
 
-  /* USER CODE BEGIN UART4_Init 1 */
+  /* USER CODE BEGIN USART2_Init 1 */
 
-  /* USER CODE END UART4_Init 1 */
-  huart4.Instance = UART4;
-  huart4.Init.BaudRate = 115200;
-  huart4.Init.WordLength = UART_WORDLENGTH_8B;
-  huart4.Init.StopBits = UART_STOPBITS_1;
-  huart4.Init.Parity = UART_PARITY_NONE;
-  huart4.Init.Mode = UART_MODE_TX_RX;
-  huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart4.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart4.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart4.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart4) != HAL_OK)
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN UART4_Init 2 */
+  /* USER CODE BEGIN USART2_Init 2 */
 
-  /* USER CODE END UART4_Init 2 */
-
-}
-
-/**
-  * @brief UART5 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_UART5_Init(void)
-{
-
-  /* USER CODE BEGIN UART5_Init 0 */
-
-  /* USER CODE END UART5_Init 0 */
-
-  /* USER CODE BEGIN UART5_Init 1 */
-
-  /* USER CODE END UART5_Init 1 */
-  huart5.Instance = UART5;
-  huart5.Init.BaudRate = 9600;
-  huart5.Init.WordLength = UART_WORDLENGTH_8B;
-  huart5.Init.StopBits = UART_STOPBITS_1;
-  huart5.Init.Parity = UART_PARITY_NONE;
-  huart5.Init.Mode = UART_MODE_TX_RX;
-  huart5.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart5.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart5.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart5.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart5) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN UART5_Init 2 */
-
-  /* USER CODE END UART5_Init 2 */
+  /* USER CODE END USART2_Init 2 */
 
 }
 
@@ -396,11 +398,10 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin|CLK_TriState_Pin|CS_N_Pin|SCLK_Pin
-                          |Din_Pin|Enable_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin|CS_N_Pin|SCLK_Pin|Din_Pin
+                          |Enable_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, SDA_dp_Pin|SCL_dp_Pin, GPIO_PIN_RESET);
@@ -414,10 +415,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Laser_Control_Pin CLK_TriState_Pin CS_N_Pin SCLK_Pin
-                           Din_Pin Enable_Pin */
-  GPIO_InitStruct.Pin = Laser_Control_Pin|CLK_TriState_Pin|CS_N_Pin|SCLK_Pin
-                          |Din_Pin|Enable_Pin;
+  /*Configure GPIO pins : Laser_Control_Pin CS_N_Pin SCLK_Pin Din_Pin
+                           Enable_Pin */
+  GPIO_InitStruct.Pin = Laser_Control_Pin|CS_N_Pin|SCLK_Pin|Din_Pin
+                          |Enable_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
