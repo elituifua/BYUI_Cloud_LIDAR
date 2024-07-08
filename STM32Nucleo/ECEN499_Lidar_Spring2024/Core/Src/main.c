@@ -235,6 +235,8 @@ int main(void)
 //	  		  }
 //	  	  }
 //	  	  else if (strcmp(message, "Start_measure") == 0){
+
+	  	  wait_cycles(4000000);
 	  	  double tof = take_measurement();
 	  	  double distance_meas = tof*299792458*0.5;
 	  	  char distance_meas_str[MAX_MESSAGE_SIZE];
