@@ -210,9 +210,9 @@ int main(void)
 	  // check for message on USART2
 	  if (USART2->ISR & UART_FLAG_RXNE){
 		  // zero out message array
-	  	  memset(message, 0, sizeof(message));
+	  	  memset(distance, 0, sizeof(message));
 	  	  // get message from USART2
-	  	  HAL_UART_Receive(&huart2, (unsigned char*) message, sizeof(message)-1, UART_DELAY);
+//	  	  HAL_UART_Receive(&huart2, (unsigned char*) message, sizeof(message)-1, UART_DELAY);
 	  	  // send the same message to USART1
 //	  	  HAL_UART_Transmit(&huart1, (unsigned char*) message, strlen(message), UART_DELAY);
 	  	  // check for message on USART1
@@ -222,7 +222,7 @@ int main(void)
 	  	  // get message from USART1
 //	  	  HAL_UART_Receive(&huart1, (unsigned char*) message, sizeof(message)-1, UART_DELAY);
 	  	  // send the same message to USART2
-	  	  HAL_UART_Transmit(&huart2, (unsigned char*) message, strlen(message), UART_DELAY);
+
 
 //	  	  if (strcmp(message,"Set_pot_val") == 0){
 //	  		  memset(message, 0, sizeof(message));
@@ -240,6 +240,7 @@ int main(void)
 	  	  char distance_meas_str[MAX_MESSAGE_SIZE];
 	  	  itoa(distance_meas, distance_meas_str, 10);
 	  	  strncpy(distance, distance_meas_str, MAX_MESSAGE_SIZE);
+	  	  HAL_UART_Transmit(&huart2, (unsigned char*) distance, strlen(distance), UART_DELAY);
 	  }
 
 
