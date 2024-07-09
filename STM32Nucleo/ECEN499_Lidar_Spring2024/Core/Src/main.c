@@ -208,9 +208,9 @@ int main(void)
   while (1)
   {
 	  // check for message on USART2
-	  if (USART2->ISR & UART_FLAG_RXNE){
-		  // zero out message array
-	  	  memset(distance, 0, sizeof(message));
+//	  if (USART2->ISR & UART_FLAG_RXNE){
+//		  // zero out message array
+//	  	  memset(distance, 0, sizeof(message));
 	  	  // get message from USART2
 //	  	  HAL_UART_Receive(&huart2, (unsigned char*) message, sizeof(message)-1, UART_DELAY);
 	  	  // send the same message to USART1
@@ -236,13 +236,13 @@ int main(void)
 //	  	  }
 //	  	  else if (strcmp(message, "Start_measure") == 0){
 
-	  	  wait_cycles(4000000);
-	  	  double tof = take_measurement();
-	  	  double distance_meas = tof*299792458*0.5;
-	  	  char distance_meas_str[MAX_MESSAGE_SIZE];
-	  	  itoa(distance_meas, distance_meas_str, 10);
-	  	  strncpy(distance, distance_meas_str, MAX_MESSAGE_SIZE);
-	  	  HAL_UART_Transmit(&huart2, (unsigned char*) distance, strlen(distance), UART_DELAY);
+	  wait_cycles(4000000);
+	  double tof = take_measurement();
+	  double distance_meas = tof*299792458*0.5;
+	  char distance_meas_str[MAX_MESSAGE_SIZE];
+	  snprintf(distance_meas_str, MAX_MESSAGE_SIZE, "%f", distance_meas);
+//	  strncpy(distance, distance_meas_str, MAX_MESSAGE_SIZE);
+	  HAL_UART_Transmit(&huart2, (unsigned char*) distance_meas_str, strlen(distance_meas_str), UART_DELAY);
 	  }
 
 
@@ -252,7 +252,7 @@ int main(void)
 
   }
   /* USER CODE END 3 */
-}
+//}
 
 /**
   * @brief System Clock Configuration
