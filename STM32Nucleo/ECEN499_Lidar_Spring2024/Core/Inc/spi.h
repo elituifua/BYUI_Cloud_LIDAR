@@ -50,6 +50,7 @@ void SPI_Write_8(uint8_t data)
         HAL_GPIO_WritePin(GPIOA, SCLK_Pin, GPIO_PIN_RESET);
         wait_cycles(4);
     }
+    HAL_GPIO_WritePin(GPIOA, Din_Pin, GPIO_PIN_RESET);
 }
 
 void SPI_Write_24(uint32_t data)
@@ -57,7 +58,7 @@ void SPI_Write_24(uint32_t data)
     for (int i = 0; i < 24; i++)
     {
         // Set MOSI according to the most significant bit of data
-        HAL_GPIO_WritePin(GPIOA, Din_Pin, (data & 0x80) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOA, Din_Pin, (data & 0x800000) ? GPIO_PIN_SET : GPIO_PIN_RESET);
         data <<= 1; // Shift data left
 
         // Toggle SCK
@@ -66,6 +67,7 @@ void SPI_Write_24(uint32_t data)
         HAL_GPIO_WritePin(GPIOA, SCLK_Pin, GPIO_PIN_RESET);
         wait_cycles(4);
     }
+    HAL_GPIO_WritePin(GPIOA, Din_Pin, GPIO_PIN_RESET);
 }
 
 uint8_t SPI_Read_8(void)
@@ -75,9 +77,9 @@ uint8_t SPI_Read_8(void)
     {
         data <<= 1; // Shift data left
 
+
         // Toggle SCK
         HAL_GPIO_WritePin(GPIOA, SCLK_Pin, GPIO_PIN_SET);
-        wait_cycles(4);
 
         // Read MISO
         if (HAL_GPIO_ReadPin(GPIOB, Dout_Pin) == GPIO_PIN_SET)
@@ -85,6 +87,7 @@ uint8_t SPI_Read_8(void)
             data |= 0x01;
         }
 
+        wait_cycles(4);
         HAL_GPIO_WritePin(GPIOA, SCLK_Pin, GPIO_PIN_RESET);
         wait_cycles(4);
     }
@@ -100,7 +103,6 @@ uint32_t SPI_Read_24(void)
 
         // Toggle SCK
         HAL_GPIO_WritePin(GPIOA, SCLK_Pin, GPIO_PIN_SET);
-        wait_cycles(4);
 
         // Read MISO
         if (HAL_GPIO_ReadPin(GPIOB, Dout_Pin) == GPIO_PIN_SET)
@@ -108,6 +110,7 @@ uint32_t SPI_Read_24(void)
             data |= 0x01;
         }
 
+        wait_cycles(4);
         HAL_GPIO_WritePin(GPIOA, SCLK_Pin, GPIO_PIN_RESET);
         wait_cycles(4);
     }

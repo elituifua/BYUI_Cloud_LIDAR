@@ -79,29 +79,32 @@ void Set_Pot_Value(uint8_t pot_value)
 	 */
 
 	uint8_t tx_data[2];  // Buffer to hold the data to be transmitted
-	uint16_t SLAVE_ADDRESS = 0x11; //This will need to be changed.
-
+	uint8_t SLAVE_ADDRESS = (0x2E << 1) ; //This will need to be changed.
 	// Populate the data buffer
 	tx_data[0] = 0b00000000;  // Register address to write to
 	tx_data[1] = pot_value;   // 8-bit word to write //SEE Resistance Value table in Data sheet.
 
 	// Perform I2C transmission
-	HAL_I2C_Master_Transmit(&hi2c1, (uint16_t)SLAVE_ADDRESS, tx_data, 2, HAL_MAX_DELAY);
+	HAL_I2C_Master_Transmit(&hi2c1, (uint8_t)SLAVE_ADDRESS, tx_data, 2, HAL_MAX_DELAY);
 }
 
 void Intialize_TDC(void)
 {
+	  char thing[30] = "Yeetus";
+	  HAL_UART_Transmit(&huart2, (unsigned char*) thing, strlen(thing), UART_DELAY);
+
+	HAL_GPIO_WritePin(GPIOA, CS_N_Pin, GPIO_PIN_SET);
 	// Set Enable Pin
-	HAL_GPIO_WritePin(GPIOA, Enable_Pin, GPIO_PIN_SET);
+ 	HAL_GPIO_WritePin(GPIOA, Enable_Pin, GPIO_PIN_SET);
 
 	// wait at least 1.5 ms (12,000 clock cycles) for LDO_SET2 (see datasheet 8.4.7)
 	wait_cycles(24000);
 
 	// Set tdc to mode 2
 	// set force calibration to 1
-	uint32_t config1 = TDC7200_Read_Register(TDC_CONFIG1) | 0x82;
+	uint32_t config1 = TDC7200_Read_Register(TDC_CONFIG1) | 0x92;
 	TDC7200_Write_Register(TDC_CONFIG1, config1);
-
+	config1 = TDC7200_Read_Register(TDC_CONFIG1);
 
 	// set calibration2_periods to b'11
 	uint32_t config2 = TDC7200_Read_Register(TDC_CONFIG2) | 0xC0;
@@ -115,16 +118,21 @@ double take_measurement(){
 	uint32_t config_value = TDC7200_Read_Register(TDC_CONFIG1);
 	config_value |= 0x01;
 	TDC7200_Write_Register(TDC_CONFIG1, config_value);
+	wait_cycles(400);
+	//config_value = TDC7200_Read_Register(TDC_CONFIG1); // for testing
 
 	// Wait for trig
-	while (HAL_GPIO_ReadPin(GPIOA, Trigg_Pin) == GPIO_PIN_RESET)
-		{
-			wait_cycles(1);
-		}
+//	while (HAL_GPIO_ReadPin(GPIOA, Trigg_Pin) != GPIO_PIN_SET)
+//		{
+//			wait_cycles(1);
+//		}
 
     //when trig goes high, set start_pin high and laser control pin high
-    HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_SET); // Start High
     HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_SET); // Laser High
+	HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_SET); // Start High
+
+	wait_cycles(100);
+	//HAL_GPIO_WritePin(GPIOC, Test_Output_Pin, GPIO_PIN_SET); // Stop High
 
     // wait for interrupt
     while (HAL_GPIO_ReadPin(GPIOA, Interrupt_Pin) == GPIO_PIN_RESET)
@@ -135,7 +143,7 @@ double take_measurement(){
 	// read result
     HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_RESET); // Start low
     HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_RESET); // Laser low
-
+	//HAL_GPIO_WritePin(GPIOC, Test_Output_Pin, GPIO_PIN_RESET); // for testing
 
     // Calculate Time of Flight
     int time1 = TDC7200_Read_Register(TDC_TIME1);
@@ -197,9 +205,9 @@ int main(void)
 
   Intialize_TDC();
 
-  wait_cycles(2000000);
+  //wait_cycles(2000000);
 
-  Set_Pot_Value(128);
+  Set_Pot_Value(108);
 
   /* USER CODE END 2 */
 
@@ -250,9 +258,9 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-  }
+
   /* USER CODE END 3 */
-//}
+}
 
 /**
   * @brief System Clock Configuration
@@ -319,7 +327,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x2000090E;
+  hi2c1.Init.Timing = 0xA0006AFF;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -403,25 +411,25 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin|CS_N_Pin|SCLK_Pin|Din_Pin
-                          |Enable_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin|SCLK_Pin|CS_N_Pin|Din_Pin
+                          |Start_Pin|Enable_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, SDA_dp_Pin|SCL_dp_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(Start_GPIO_Port, Start_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(Test_Output_GPIO_Port, Test_Output_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : Interrupt_Pin Trigg_Pin */
-  GPIO_InitStruct.Pin = Interrupt_Pin|Trigg_Pin;
+  /*Configure GPIO pin : Interrupt_Pin */
+  GPIO_InitStruct.Pin = Interrupt_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(Interrupt_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Laser_Control_Pin CS_N_Pin SCLK_Pin Din_Pin
-                           Enable_Pin */
-  GPIO_InitStruct.Pin = Laser_Control_Pin|CS_N_Pin|SCLK_Pin|Din_Pin
-                          |Enable_Pin;
+  /*Configure GPIO pins : Laser_Control_Pin SCLK_Pin CS_N_Pin Din_Pin
+                           Start_Pin Enable_Pin */
+  GPIO_InitStruct.Pin = Laser_Control_Pin|SCLK_Pin|CS_N_Pin|Din_Pin
+                          |Start_Pin|Enable_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -434,17 +442,23 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : Start_Pin */
-  GPIO_InitStruct.Pin = Start_Pin;
+  /*Configure GPIO pin : Trigg_Pin */
+  GPIO_InitStruct.Pin = Trigg_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(Trigg_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : Test_Output_Pin */
+  GPIO_InitStruct.Pin = Test_Output_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(Start_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(Test_Output_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : Dout_Pin */
   GPIO_InitStruct.Pin = Dout_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(Dout_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
