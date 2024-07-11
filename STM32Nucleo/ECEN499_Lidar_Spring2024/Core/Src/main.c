@@ -102,7 +102,7 @@ void Intialize_TDC(void)
 
 	// Set tdc to mode 2
 	// set force calibration to 1
-	uint32_t config1 = TDC7200_Read_Register(TDC_CONFIG1) | 0x92;
+	uint32_t config1 = TDC7200_Read_Register(TDC_CONFIG1) | 0x12;
 	TDC7200_Write_Register(TDC_CONFIG1, config1);
 	config1 = TDC7200_Read_Register(TDC_CONFIG1);
 
@@ -115,9 +115,12 @@ void Intialize_TDC(void)
 
 double take_measurement(){
 	// Set START_MEAS bit to 1
+
+
 	uint32_t config_value = TDC7200_Read_Register(TDC_CONFIG1);
 	config_value |= 0x01;
 	TDC7200_Write_Register(TDC_CONFIG1, config_value);
+
 	wait_cycles(400);
 	//config_value = TDC7200_Read_Register(TDC_CONFIG1); // for testing
 
@@ -127,15 +130,17 @@ double take_measurement(){
 //			wait_cycles(1);
 //		}
 
+
     //when trig goes high, set start_pin high and laser control pin high
-    HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_SET); // Laser High
+	HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_SET); // Laser High
+	wait_cycles(1);
 	HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_SET); // Start High
 
-	wait_cycles(100);
+	//wait_cycles(100);
 	//HAL_GPIO_WritePin(GPIOC, Test_Output_Pin, GPIO_PIN_SET); // Stop High
 
     // wait for interrupt
-    while (HAL_GPIO_ReadPin(GPIOA, Interrupt_Pin) == GPIO_PIN_RESET)
+    while (HAL_GPIO_ReadPin(GPIOA, Interrupt_Pin) == GPIO_PIN_SET)
         {
             wait_cycles(1);
         }
@@ -146,13 +151,13 @@ double take_measurement(){
 	//HAL_GPIO_WritePin(GPIOC, Test_Output_Pin, GPIO_PIN_RESET); // for testing
 
     // Calculate Time of Flight
-    int time1 = TDC7200_Read_Register(TDC_TIME1);
-    int time2 = TDC7200_Read_Register(TDC_TIME2);
-    int cal1 = TDC7200_Read_Register(TDC_CALIBRATION1);
-    int cal2 = TDC7200_Read_Register(TDC_CALIBRATION2);
-    int clock_count1 = TDC7200_Read_Register(TDC_CLOCK_COUNT1);
-    int cal2_periods = 40;
-    double clk_period = 1/(8*10^6);
+    double time1 = TDC7200_Read_Register(TDC_TIME1);
+    double time2 = TDC7200_Read_Register(TDC_TIME2);
+    double cal1 = TDC7200_Read_Register(TDC_CALIBRATION1);
+    double cal2 = TDC7200_Read_Register(TDC_CALIBRATION2);
+    double clock_count1 = TDC7200_Read_Register(TDC_CLOCK_COUNT1);
+    const double cal2_periods = 40;
+    const double clk_period = 0.000000125;
 
     double cal_count = (cal2-cal1)/(cal2_periods - 1);
 
@@ -162,7 +167,7 @@ double take_measurement(){
 
 }
 
-uint32_t calculate_offset(uint32_t measured_time){
+double calculate_offset(double measured_time){
 	// Calculate offset for time for laser to turn on and any other delays in the circuit
 	return measured_time;
 }
@@ -205,7 +210,7 @@ int main(void)
 
   Intialize_TDC();
 
-  //wait_cycles(2000000);
+  wait_cycles(1000000);
 
   Set_Pot_Value(108);
 
@@ -244,14 +249,21 @@ int main(void)
 //	  	  }
 //	  	  else if (strcmp(message, "Start_measure") == 0){
 
-	  wait_cycles(4000000);
+	  wait_cycles(1000000);
 	  double tof = take_measurement();
+	  tof = calculate_offset(tof);
 	  double distance_meas = tof*299792458*0.5;
 	  char distance_meas_str[MAX_MESSAGE_SIZE];
-	  snprintf(distance_meas_str, MAX_MESSAGE_SIZE, "%f", distance_meas);
+	  snprintf(distance_meas_str, MAX_MESSAGE_SIZE, "%f%s", distance_meas,"\r\n");
+	  //char nl_character[MAX_MESSAGE_SIZE] ;//
+	  //snprintf(nl_character, MAX_MESSAGE_SIZE, "%s", "\n\0");
 //	  strncpy(distance, distance_meas_str, MAX_MESSAGE_SIZE);
 	  HAL_UART_Transmit(&huart2, (unsigned char*) distance_meas_str, strlen(distance_meas_str), UART_DELAY);
-	  }
+
+
+	  //HAL_UART_Transmit(&huart2, (unsigned char*) nl_character, strlen(nl_character), UART_DELAY);
+
+  }
 
 
     /* USER CODE END WHILE */
@@ -423,7 +435,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : Interrupt_Pin */
   GPIO_InitStruct.Pin = Interrupt_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(Interrupt_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : Laser_Control_Pin SCLK_Pin CS_N_Pin Din_Pin
