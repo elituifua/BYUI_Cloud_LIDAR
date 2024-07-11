@@ -133,7 +133,7 @@ double take_measurement(){
 
     //when trig goes high, set start_pin high and laser control pin high
 	HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_SET); // Laser High
-	wait_cycles(1);
+	//wait_cycles(1);
 	HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_SET); // Start High
 
 	//wait_cycles(100);
