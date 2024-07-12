@@ -132,25 +132,26 @@ double take_measurement(){
 
 
     //when trig goes high, set start_pin high and laser control pin high
-	HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_SET); // Laser High
-	//wait_cycles(1);
+	HAL_GPIO_WritePin(GPIOC, Laser_Control_Pin, GPIO_PIN_SET); // Laser High
+	//wait_cycles(1);//Optimize delay for accurate timing //less than then 33ns would be great.
 	HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_SET); // Start High
 
 	//wait_cycles(100);
 	//HAL_GPIO_WritePin(GPIOC, Test_Output_Pin, GPIO_PIN_SET); // Stop High
 
     // wait for interrupt
-    while (HAL_GPIO_ReadPin(GPIOA, Interrupt_Pin) == GPIO_PIN_SET)
-        {
-            wait_cycles(1);
-        }
-
+//    while (HAL_GPIO_ReadPin(GPIOA, Interrupt_Pin) == GPIO_PIN_SET)
+//        {
+//            wait_cycles(1);
+//        }
+wait_cycles(64000);
 	// read result
     HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_RESET); // Start low
-    HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin, GPIO_PIN_RESET); // Laser low
+    HAL_GPIO_WritePin(GPIOC, Laser_Control_Pin, GPIO_PIN_RESET); // Laser low
 	//HAL_GPIO_WritePin(GPIOC, Test_Output_Pin, GPIO_PIN_RESET); // for testing
 
     // Calculate Time of Flight
+    wait_cycles(5000);
     double time1 = TDC7200_Read_Register(TDC_TIME1);
     double time2 = TDC7200_Read_Register(TDC_TIME2);
     double cal1 = TDC7200_Read_Register(TDC_CALIBRATION1);
@@ -418,19 +419,26 @@ static void MX_GPIO_Init(void)
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, Laser_Control_Pin|SCLK_Pin|CS_N_Pin|Din_Pin
-                          |Start_Pin|Enable_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, Laser_Control_Pin|Test_Output_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, SCLK_Pin|CS_N_Pin|Din_Pin|Start_Pin
+                          |Enable_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, SDA_dp_Pin|SCL_dp_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(Test_Output_GPIO_Port, Test_Output_Pin, GPIO_PIN_RESET);
+  /*Configure GPIO pins : Laser_Control_Pin Test_Output_Pin */
+  GPIO_InitStruct.Pin = Laser_Control_Pin|Test_Output_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : Interrupt_Pin */
   GPIO_InitStruct.Pin = Interrupt_Pin;
@@ -438,10 +446,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(Interrupt_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Laser_Control_Pin SCLK_Pin CS_N_Pin Din_Pin
-                           Start_Pin Enable_Pin */
-  GPIO_InitStruct.Pin = Laser_Control_Pin|SCLK_Pin|CS_N_Pin|Din_Pin
-                          |Start_Pin|Enable_Pin;
+  /*Configure GPIO pins : SCLK_Pin CS_N_Pin Din_Pin Start_Pin
+                           Enable_Pin */
+  GPIO_InitStruct.Pin = SCLK_Pin|CS_N_Pin|Din_Pin|Start_Pin
+                          |Enable_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -459,13 +467,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(Trigg_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : Test_Output_Pin */
-  GPIO_InitStruct.Pin = Test_Output_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(Test_Output_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : Dout_Pin */
   GPIO_InitStruct.Pin = Dout_Pin;

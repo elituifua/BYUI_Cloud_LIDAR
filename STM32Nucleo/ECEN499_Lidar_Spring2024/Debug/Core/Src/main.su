@@ -8,10 +8,10 @@
 ../Core/Src/main.c:72:6:Set_Pot_Value	32	static
 ../Core/Src/main.c:91:6:Intialize_TDC	48	static
 ../Core/Src/main.c:116:8:take_measurement	104	static
-../Core/Src/main.c:170:8:calculate_offset	16	static
-../Core/Src/main.c:182:5:main	144	static
-../Core/Src/main.c:281:6:SystemClock_Config	96	static
-../Core/Src/main.c:331:13:MX_I2C1_Init	8	static
-../Core/Src/main.c:379:13:MX_USART2_UART_Init	8	static
-../Core/Src/main.c:414:13:MX_GPIO_Init	40	static
-../Core/Src/main.c:488:6:Error_Handler	4	static,ignoring_inline_asm
+../Core/Src/main.c:171:8:calculate_offset	16	static
+../Core/Src/main.c:183:5:main	144	static
+../Core/Src/main.c:282:6:SystemClock_Config	96	static
+../Core/Src/main.c:332:13:MX_I2C1_Init	8	static
+../Core/Src/main.c:380:13:MX_USART2_UART_Init	8	static
+../Core/Src/main.c:415:13:MX_GPIO_Init	40	static
+../Core/Src/main.c:489:6:Error_Handler	4	static,ignoring_inline_asm
