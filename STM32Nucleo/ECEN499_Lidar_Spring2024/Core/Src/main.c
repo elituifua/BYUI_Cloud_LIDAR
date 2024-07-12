@@ -25,6 +25,7 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"
+#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -115,43 +116,26 @@ void Intialize_TDC(void)
 
 double take_measurement(){
 	// Set START_MEAS bit to 1
-
-
 	uint32_t config_value = TDC7200_Read_Register(TDC_CONFIG1);
 	config_value |= 0x01;
 	TDC7200_Write_Register(TDC_CONFIG1, config_value);
 
-	wait_cycles(400);
-	//config_value = TDC7200_Read_Register(TDC_CONFIG1); // for testing
+	//wait_cycles(400);
+	HAL_Delay(1);
 
-	// Wait for trig
-//	while (HAL_GPIO_ReadPin(GPIOA, Trigg_Pin) != GPIO_PIN_SET)
-//		{
-//			wait_cycles(1);
-//		}
-
-
-    //when trig goes high, set start_pin high and laser control pin high
+    //set start_pin high and laser control pin high
 	HAL_GPIO_WritePin(GPIOC, Laser_Control_Pin, GPIO_PIN_SET); // Laser High
 	//wait_cycles(1);//Optimize delay for accurate timing //less than then 33ns would be great.
 	HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_SET); // Start High
 
-	//wait_cycles(100);
-	//HAL_GPIO_WritePin(GPIOC, Test_Output_Pin, GPIO_PIN_SET); // Stop High
+	// wait for TDC to time out
+	HAL_Delay(10);
 
-    // wait for interrupt
-//    while (HAL_GPIO_ReadPin(GPIOA, Interrupt_Pin) == GPIO_PIN_SET)
-//        {
-//            wait_cycles(1);
-//        }
-wait_cycles(64000);
 	// read result
     HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_RESET); // Start low
     HAL_GPIO_WritePin(GPIOC, Laser_Control_Pin, GPIO_PIN_RESET); // Laser low
-	//HAL_GPIO_WritePin(GPIOC, Test_Output_Pin, GPIO_PIN_RESET); // for testing
 
     // Calculate Time of Flight
-    wait_cycles(5000);
     double time1 = TDC7200_Read_Register(TDC_TIME1);
     double time2 = TDC7200_Read_Register(TDC_TIME2);
     double cal1 = TDC7200_Read_Register(TDC_CALIBRATION1);
@@ -159,9 +143,7 @@ wait_cycles(64000);
     double clock_count1 = TDC7200_Read_Register(TDC_CLOCK_COUNT1);
     const double cal2_periods = 40;
     const double clk_period = 0.000000125;
-
     double cal_count = (cal2-cal1)/(cal2_periods - 1);
-
     double norm_lsb = clk_period / cal_count;
     double tof = ((time1 - time2) * norm_lsb) + (clock_count1 * clk_period);
     return tof;
@@ -170,7 +152,15 @@ wait_cycles(64000);
 
 double calculate_offset(double measured_time){
 	// Calculate offset for time for laser to turn on and any other delays in the circuit
-	return measured_time;
+	return measured_time - (double) 0.00038588607;
+}
+
+// the compare function for double values
+static int compare (const void * a, const void * b)
+{
+  if (*(double*)a > *(double*)b) return 1;
+  else if (*(double*)a < *(double*)b) return -1;
+  else return 0;
 }
 
 
@@ -190,7 +180,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+   HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -211,9 +201,12 @@ int main(void)
 
   Intialize_TDC();
 
-  wait_cycles(1000000);
+  HAL_Delay(6);
 
-  Set_Pot_Value(108);
+  Set_Pot_Value(110);
+
+  double values[41];
+
 
   /* USER CODE END 2 */
 
@@ -221,48 +214,35 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  // check for message on USART2
-//	  if (USART2->ISR & UART_FLAG_RXNE){
-//		  // zero out message array
-//	  	  memset(distance, 0, sizeof(message));
-	  	  // get message from USART2
-//	  	  HAL_UART_Receive(&huart2, (unsigned char*) message, sizeof(message)-1, UART_DELAY);
-	  	  // send the same message to USART1
-//	  	  HAL_UART_Transmit(&huart1, (unsigned char*) message, strlen(message), UART_DELAY);
-	  	  // check for message on USART1
-//	  if (USART1->ISR & UART_FLAG_RXNE){
-//		  // zero out message array
-//	 	  memset(message, 0, sizeof(message));
-	  	  // get message from USART1
-//	  	  HAL_UART_Receive(&huart1, (unsigned char*) message, sizeof(message)-1, UART_DELAY);
-	  	  // send the same message to USART2
+
+	  for (int i = 1; i < 41 ; i++){
+
+	  	  double tof = take_measurement();
+		  if (tof > 1){
+			  i--;
+		  }
+		  else{
+		  values[i] = tof;
+		  }
+	  }
+
+	  //sort array in c
+	  qsort(&values[1], 40, sizeof(double), compare);
+	  double average;
+	  for(int j = 6; j < 36; j++){
+		  average += values[j];
+	  }
+	  average = average / 30;
+
+	  average = calculate_offset(average);
 
 
-//	  	  if (strcmp(message,"Set_pot_val") == 0){
-//	  		  memset(message, 0, sizeof(message));
-//	  		  strncpy(message, "Please enter pot value (1-128): ", MAX_MESSAGE_SIZE);
-//	  		  if (1 <= atoi(message) <= 128){
-//	  			  new_pot_value = atoi(message);
-//	  		  }
-//	  		  else{
-//	  			  strncpy(message, "Please use the set_pot_val command again with valid pot value.", MAX_MESSAGE_SIZE);
-//	  		  }
-//	  	  }
-//	  	  else if (strcmp(message, "Start_measure") == 0){
-
-	  wait_cycles(1000000);
-	  double tof = take_measurement();
-	  tof = calculate_offset(tof);
-	  double distance_meas = tof*299792458*0.5;
+	  double distance_meas = average*299792458;
 	  char distance_meas_str[MAX_MESSAGE_SIZE];
 	  snprintf(distance_meas_str, MAX_MESSAGE_SIZE, "%f%s", distance_meas,"\r\n");
-	  //char nl_character[MAX_MESSAGE_SIZE] ;//
-	  //snprintf(nl_character, MAX_MESSAGE_SIZE, "%s", "\n\0");
-//	  strncpy(distance, distance_meas_str, MAX_MESSAGE_SIZE);
 	  HAL_UART_Transmit(&huart2, (unsigned char*) distance_meas_str, strlen(distance_meas_str), UART_DELAY);
 
-
-	  //HAL_UART_Transmit(&huart2, (unsigned char*) nl_character, strlen(nl_character), UART_DELAY);
+	  average = 0;
 
   }
 
