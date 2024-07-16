@@ -1916,7 +1916,6 @@ double take_measurement(){
  8001386:	2101      	movs	r1, #1
  8001388:	4857      	ldr	r0, [pc, #348]	@ (80014e8 <take_measurement+0x188>)
  800138a:	f001 f86d 	bl	8002468 <HAL_GPIO_WritePin>
-	//wait_cycles(1);//Optimize delay for accurate timing //less than then 33ns would be great.
 	HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_SET); // Start High
  800138e:	2201      	movs	r2, #1
  8001390:	f44f 7100 	mov.w	r1, #512	@ 0x200

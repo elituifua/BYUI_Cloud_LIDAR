@@ -125,7 +125,6 @@ double take_measurement(){
 
     //set start_pin high and laser control pin high
 	HAL_GPIO_WritePin(GPIOC, Laser_Control_Pin, GPIO_PIN_SET); // Laser High
-	//wait_cycles(1);//Optimize delay for accurate timing //less than then 33ns would be great.
 	HAL_GPIO_WritePin(GPIOA, Start_Pin, GPIO_PIN_SET); // Start High
 
 	// wait for TDC to time out
