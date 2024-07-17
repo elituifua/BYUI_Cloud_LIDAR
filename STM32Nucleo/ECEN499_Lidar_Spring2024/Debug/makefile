@@ -60,8 +60,8 @@ all: main-build
 main-build: ECEN499_Lidar_Spring2024.elf secondary-outputs
 
 # Tool invocations
-ECEN499_Lidar_Spring2024.elf ECEN499_Lidar_Spring2024.map: $(OBJS) $(USER_OBJS) C:\Users\toby3\Documents\GitHub\BYUI_Cloud_LIDAR\STM32Nucleo\ECEN499_Lidar_Spring2024\STM32L476RGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "ECEN499_Lidar_Spring2024.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\toby3\Documents\GitHub\BYUI_Cloud_LIDAR\STM32Nucleo\ECEN499_Lidar_Spring2024\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ECEN499_Lidar_Spring2024.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+ECEN499_Lidar_Spring2024.elf ECEN499_Lidar_Spring2024.map: $(OBJS) $(USER_OBJS) C:\Users\justi\OneDrive\Desktop\Justin\BYU-Idaho\Fall\ 2023\ Semester\Embedded\ Systems\BYUI_Cloud_LIDAR\STM32Nucleo\ECEN499_Lidar_Spring2024\STM32L476RGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "ECEN499_Lidar_Spring2024.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\justi\OneDrive\Desktop\Justin\BYU-Idaho\Fall 2023 Semester\Embedded Systems\BYUI_Cloud_LIDAR\STM32Nucleo\ECEN499_Lidar_Spring2024\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ECEN499_Lidar_Spring2024.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
