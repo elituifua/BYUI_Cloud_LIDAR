@@ -94,6 +94,7 @@ void Intialize_TDC(void)
 	  char thing[30] = "Yeetus";
 	  HAL_UART_Transmit(&huart2, (unsigned char*) thing, strlen(thing), UART_DELAY);
 
+	//chip select set
 	HAL_GPIO_WritePin(GPIOA, CS_N_Pin, GPIO_PIN_SET);
 	// Set Enable Pin
  	HAL_GPIO_WritePin(GPIOA, Enable_Pin, GPIO_PIN_SET);
