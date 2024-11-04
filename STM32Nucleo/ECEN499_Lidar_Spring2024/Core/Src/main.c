@@ -114,6 +114,13 @@ void Intialize_TDC(void)
 
 }
 
+void chopper_pulse(){
+
+
+
+
+}
+
 double take_measurement(){
 	// Set START_MEAS bit to 1
 	uint32_t config_value = TDC7200_Read_Register(TDC_CONFIG1);
@@ -121,7 +128,7 @@ double take_measurement(){
 	TDC7200_Write_Register(TDC_CONFIG1, config_value);
 
 	//wait_cycles(400);
-	HAL_Delay(1);
+	HAL_Delay(100);
 
     //set start_pin high and laser control pin high
 	HAL_GPIO_WritePin(GPIOC, Laser_Control_Pin, GPIO_PIN_SET); // Laser High
